@@ -33,7 +33,7 @@ class ListAllowedMixin:
 
 
 class BudgetAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
-    queryset = Budget.objects.all()
+    queryset = Budget.objects.order_by('pk')
     serializer_class = BudgetSerializer
     permission_classes = [permissions.IsAuthenticated, IsBudgetOwnerOrSharedWith]
 
@@ -62,7 +62,7 @@ class BudgetAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
 
 
 class IncomeAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
-    queryset = Income.objects.all()
+    queryset = Income.objects.order_by('pk')
     serializer_class = IncomeSerializer
     permission_classes = [permissions.IsAuthenticated, IsIncomeExpenseOwnerOrSharedWith]
     filterset_fields = ('budget', 'category')
@@ -82,7 +82,7 @@ class IncomeAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
 
 
 class ExpenseAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
-    queryset = Expense.objects.all()
+    queryset = Expense.objects.order_by('pk')
     serializer_class = ExpenseSerializer
     permission_classes = [permissions.IsAuthenticated, IsIncomeExpenseOwnerOrSharedWith]
     filterset_fields = ('budget', 'category')

@@ -1,0 +1,15 @@
+{
+    "name": "budget_name",
+    "incomes": [
+        {
+                "amount": "100.00",
+                "category": "WORK"
+        }
+    ],
+    "expenses": [
+        {
+                "amount": "5.00",
+                "category": "FOOD"
+        }
+    ]
+}
