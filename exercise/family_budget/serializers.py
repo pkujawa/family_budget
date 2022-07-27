@@ -50,3 +50,7 @@ class BudgetSerializer(serializers.HyperlinkedModelSerializer):
             'incomes',
             'expenses',
         ]
+
+
+class ShareBudgetSerializer(serializers.Serializer):
+    user = serializers.CharField()
