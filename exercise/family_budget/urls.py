@@ -9,4 +9,5 @@ router.register(r'expenses', views.ExpenseAPIViewSet, basename='expenses')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('register/', views.UserCreateAPIView.as_view(), name='register')
 ]

@@ -4,10 +4,12 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Expense, Budget, Income
-from .serializers import BudgetSerializer, BudgetCreateSerializer, ExpenseCreateSerizalizer, ExpenseSerializer, IncomeCreateSerizalizer, IncomeSerializer, ShareBudgetSerializer
+from .serializers import BudgetSerializer, BudgetCreateSerializer, ExpenseCreateSerizalizer, ExpenseSerializer, IncomeCreateSerizalizer, IncomeSerializer, ShareBudgetSerializer, UserCreateSerializer
 from django.contrib.auth.models import User
 from .permissions import IsBudgetOwnerOrSharedWith, IsIncomeExpenseOwnerOrSharedWith
 from django.db.models import Q
+from rest_framework.exceptions import PermissionDenied
+from rest_framework import generics
 
 
 class ListAllowedMixin:
@@ -51,8 +53,12 @@ class BudgetAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
         user = get_object_or_404(User, username=username)
 
         budget = self.get_object()
-        budget.shared_with.add(user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        if request.user == budget.owner:
+            budget.shared_with.add(user)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        raise PermissionDenied()
 
 
 class IncomeAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
@@ -77,7 +83,7 @@ class IncomeAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
 
 class ExpenseAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
     queryset = Expense.objects.all()
-    serializer_class = ExpenseCreateSerizalizer
+    serializer_class = ExpenseSerializer
     permission_classes = [permissions.IsAuthenticated, IsIncomeExpenseOwnerOrSharedWith]
     filterset_fields = ('budget', 'category')
 
@@ -93,3 +99,7 @@ class ExpenseAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
         if self.action == "create":
             return ExpenseCreateSerizalizer
         return self.serializer_class
+
+
+class UserCreateAPIView(generics.CreateAPIView):
+    serializer_class = UserCreateSerializer
