@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Budget, Expense, Income
 
 
@@ -15,18 +16,18 @@ class ExpenseInLine(admin.StackedInline):
 @admin.register(Budget)
 class BudgetAdmin(admin.ModelAdmin):
     inlines = [IncomeInLine, ExpenseInLine]
-    list_display = ('id', 'name', 'owner')
-    list_filter = ['owner']
-    search_fields = ['owner__username']
+    list_display = ("id", "name", "owner")
+    list_filter = ["owner"]
+    search_fields = ["owner__username"]
 
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'amount', 'category')
-    list_filter = ['category']
+    list_display = ("id", "amount", "category")
+    list_filter = ["category"]
 
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'amount', 'category')
-    list_filter = ['category']
+    list_display = ("id", "amount", "category")
+    list_filter = ["category"]

@@ -1,15 +1,23 @@
-from rest_framework import viewsets, status, permissions
+from django.contrib.auth.models import User
+from django.db.models import Q
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from .models import Expense, Budget, Income
-from .serializers import BudgetSerializer, BudgetCreateSerializer, ExpenseCreateSerizalizer, ExpenseSerializer, IncomeCreateSerizalizer, IncomeSerializer, ShareBudgetSerializer, UserCreateSerializer
-from django.contrib.auth.models import User
+from .models import Budget, Expense, Income
 from .permissions import IsBudgetOwnerOrSharedWith, IsIncomeExpenseOwnerOrSharedWith
-from django.db.models import Q
-from rest_framework.exceptions import PermissionDenied
-from rest_framework import generics
+from .serializers import (
+    BudgetCreateSerializer,
+    BudgetSerializer,
+    ExpenseCreateSerializer,
+    ExpenseSerializer,
+    IncomeCreateSerializer,
+    IncomeSerializer,
+    ShareBudgetSerializer,
+    UserCreateSerializer,
+)
 
 
 class ListAllowedMixin:
@@ -17,8 +25,9 @@ class ListAllowedMixin:
     Mixin class overriding `list` method so that the queryset is taken based on the allowed entries
     for the specific user
     """
+
     def allowed_queryset(self, request):
-        return self.get_queryset().filter(Q(owner=request.user) | Q(shared_with__in=[request.user]))
+        raise NotImplemented
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.allowed_queryset(request))
@@ -33,9 +42,14 @@ class ListAllowedMixin:
 
 
 class BudgetAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
-    queryset = Budget.objects.order_by('pk')
+    queryset = Budget.objects.order_by("pk")
     serializer_class = BudgetSerializer
     permission_classes = [permissions.IsAuthenticated, IsBudgetOwnerOrSharedWith]
+
+    def allowed_queryset(self, request):
+        return self.get_queryset().filter(
+            Q(owner=request.user) | Q(shared_with__in=[request.user])
+        )
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -45,11 +59,11 @@ class BudgetAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def share(self, request, *args, **kwargs):
         serializer = ShareBudgetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data['user']
+        username = serializer.validated_data["user"]
         user = get_object_or_404(User, username=username)
 
         budget = self.get_object()
@@ -62,10 +76,10 @@ class BudgetAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
 
 
 class IncomeAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
-    queryset = Income.objects.order_by('pk')
+    queryset = Income.objects.order_by("pk")
     serializer_class = IncomeSerializer
     permission_classes = [permissions.IsAuthenticated, IsIncomeExpenseOwnerOrSharedWith]
-    filterset_fields = ('budget', 'category')
+    filterset_fields = ("budget", "category")
 
     def allowed_queryset(self, request):
         return self.get_queryset().filter(
@@ -77,15 +91,15 @@ class IncomeAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "create":
-            return IncomeCreateSerizalizer
+            return IncomeCreateSerializer
         return self.serializer_class
 
 
 class ExpenseAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
-    queryset = Expense.objects.order_by('pk')
+    queryset = Expense.objects.order_by("pk")
     serializer_class = ExpenseSerializer
     permission_classes = [permissions.IsAuthenticated, IsIncomeExpenseOwnerOrSharedWith]
-    filterset_fields = ('budget', 'category')
+    filterset_fields = ("budget", "category")
 
     def allowed_queryset(self, request):
         return self.get_queryset().filter(
@@ -97,7 +111,7 @@ class ExpenseAPIViewSet(ListAllowedMixin, viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "create":
-            return ExpenseCreateSerizalizer
+            return ExpenseCreateSerializer
         return self.serializer_class
 
 
