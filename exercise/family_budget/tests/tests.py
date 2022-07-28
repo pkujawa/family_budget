@@ -33,7 +33,7 @@ def test_create_budget(client, user, create_budget_data):
 
 def test_create_income(client, user, budget, create_income_data):
     user_owner = user()
-    budget_1 = budget(owner=user_owner)
+    budget_1 = budget(owner=user_owner, pk=1)
     client_owner = authenticate_client(client, user_owner)
     assert Income.objects.count() == 0
     response = client_owner.post(reverse("incomes-list"), data=create_income_data)
@@ -44,7 +44,7 @@ def test_create_income(client, user, budget, create_income_data):
 
 def test_create_expense(client, user, budget, create_expense_data):
     user_owner = user()
-    budget_1 = budget(owner=user_owner)
+    budget_1 = budget(owner=user_owner, pk=1)
     client_owner = authenticate_client(client, user_owner)
     assert Expense.objects.count() == 0
     response = client_owner.post(reverse("expenses-list"), data=create_expense_data)
